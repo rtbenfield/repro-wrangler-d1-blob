@@ -30,4 +30,15 @@ test("repro", async () => {
 
   // data matches though ✅
   expect(new Uint8Array(created.data as any)).toEqual(data);
+
+  // querying data has the same result
+  const selected = await env.MY_DB.prepare(
+    "SELECT id, data FROM MyData WHERE id = ?1",
+  )
+    .bind(created.id)
+    .first<{ id: number; data: unknown }>();
+  assert(selected !== null);
+
+  // ❌ throws here 👇🏻 shows number[] instead
+  expect(selected.data).toBeInstanceOf(ArrayBuffer);
 });
